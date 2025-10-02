@@ -16,17 +16,14 @@ app.logger.setLevel(logging.INFO)
 BUCKET_NAME = os.environ.get("GCS_BUCKET", "")
 
 def upload_to_gcs(local_path, bucket_name, dest_blob):
-    """Upload file lên GCS và trả signed URL 1h"""
+    """Upload file lên GCS và trả về public URL"""
     client = storage.Client()
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(dest_blob)
-    app.logger.info("Uploading %s => gs://%s/%s", local_path, bucket_name, dest_blob)
     blob.upload_from_filename(local_path)
-    url = blob.generate_signed_url(
-        version="v4",
-        expiration=timedelta(hours=1),
-        method="GET"
-    )
+
+    # nếu bucket đã set public read
+    url = f"https://storage.googleapis.com/{bucket_name}/{dest_blob}"
     return url
 
 def _cleanup_tmp_by_id(video_id):
