@@ -31,8 +31,16 @@ def process_job(job_id, url, callback_url):
         "format": "bestvideo+bestaudio/best",
         "outtmpl": "/tmp/%(id)s.%(ext)s",
         "cookiefile": "/app/cookies.txt",
-        "merge_output_format": "mp4",
-        "restrictfilenames": True
+        "merge_output_format": "mp4",   # chỉ ghép ra container mp4
+        "postprocessors": [{
+            "key": "FFmpegVideoConvertor",
+            "preferredformat": "mp4",   # convert container thành mp4
+        }],
+        "restrictfilenames": True,
+        "ffmpeg_location": "/usr/bin/ffmpeg",  # optional, để chắc chắn gọi đúng ffmpeg
+        "postprocessor_args": [
+            "-c", "copy"   # copy stream, không re-encode
+        ],
     }
 
     try:
