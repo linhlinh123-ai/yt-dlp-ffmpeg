@@ -1,24 +1,29 @@
 from flask import Flask, request, jsonify
-import subprocess, os, uuid
+import yt_dlp
+import subprocess
 
 app = Flask(__name__)
 
+@app.route("/")
+def home():
+    return "yt-dlp CloudRun is running!"
+
 @app.route("/download", methods=["POST"])
-def download_video():
-    url = request.json.get("url")
-    if not url:
-        return jsonify({"error": "Missing video URL"}), 400
+def download():
+    data = request.get_json()
+    url = data.get("url")
 
-    video_id = str(uuid.uuid4())
-    output_path = f"/tmp/{video_id}.mp4"
+    # Ví dụ: tải audio từ YouTube
+    ydl_opts = {
+        "format": "bestaudio/best",
+        "outtmpl": "/tmp/%(title)s.%(ext)s"
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+    
+    return jsonify({"status": "ok", "title": info.get("title")})
 
-    try:
-        subprocess.run([
-            "yt-dlp", "-f", "bestvideo+bestaudio",
-            "--merge-output-format", "mp4",
-            "-o", output_path, url
-        ], check=True)
-        size = os.path.getsize(output_path)
-        return jsonify({"status": "done", "file": output_path, "size": size})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 8080))  # Cloud Run luôn dùng PORT
+    app.run(host="0.0.0.0", port=port)
