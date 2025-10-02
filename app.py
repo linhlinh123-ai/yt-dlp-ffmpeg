@@ -13,13 +13,18 @@ def download():
     data = request.get_json()
     url = data.get("url")
 
-    # Ví dụ: tải audio từ YouTube
     ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": "/tmp/%(title)s.%(ext)s"
+        "format": "best",
+        "outtmpl": "/tmp/%(title)s.%(ext)s",
+        "cookiefile": "/app/cookies.txt"  # đường dẫn tới file cookie trong container
     }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+        return jsonify({"status": "ok", "title": info.get("title")})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
     
     return jsonify({"status": "ok", "title": info.get("title")})
 
