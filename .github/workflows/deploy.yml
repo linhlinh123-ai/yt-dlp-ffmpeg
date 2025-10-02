@@ -1,0 +1,36 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [ "main" ]  # chạy khi bạn push lên nhánh main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ✅ Tạo file cookies.txt từ Secret
+      - name: Create cookies.txt
+        run: echo "${{ secrets.FB_COOKIES }}" > cookies.txt
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Build and Push Docker image
+        run: |
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/yt-dlp-service
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy yt-dlp-service \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/yt-dlp-service \
+            --region asia-southeast1 \
+            --platform managed \
+            --allow-unauthenticated
