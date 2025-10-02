@@ -36,11 +36,11 @@ def download():
     url = data["url"]
 
     # Cấu hình yt_dlp
-    outtmpl = "/tmp/%(id)s.%(ext)s"
     ydl_opts = {
-        "format": "best",
-        "outtmpl": outtmpl,
+        "format": "bestvideo+bestaudio/best",
+        "outtmpl": "/tmp/%(id)s.%(ext)s",
         "cookiefile": "/app/cookies.txt",
+        "merge_output_format": "mp4",  # ép ffmpeg ghép thành .mp4
         "restrictfilenames": True
     }
 
