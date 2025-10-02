@@ -16,10 +16,12 @@ def download():
 
     url = data["url"]
 
+    # Cấu hình yt_dlp
     ydl_opts = {
         "format": "best",
-        "outtmpl": "/tmp/%(title)s.%(ext)s",
-        "cookiefile": "/app/cookies.txt",  # file cookie mount từ secret
+        "outtmpl": "/tmp/%(id)s.%(ext)s",   # dùng ID video thay vì title để tránh lỗi tên quá dài
+        "cookiefile": "/app/cookies.txt",
+        "restrictfilenames": True           # loại bỏ ký tự đặc biệt (emoji, khoảng trắng lạ)
     }
 
     try:
